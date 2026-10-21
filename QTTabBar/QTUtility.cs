@@ -104,7 +104,15 @@ namespace QTTabBarLib {
         // internal static SolidBrush sbAlternate;
        // internal static Font StartUpTabFont;
         internal static Dictionary<string, string[]> TextResourcesDic;
+        // Explorer window opacity. Valid UI range is 20–255; 0 means "fully invisible"
+        // and is never intentional (TransparencyMinus / the opacity trackbar both floor
+        // at 20). Treat anything below the floor as corrupt and restore full opacity.
+        internal const byte WindowAlphaMin = 20;
         internal static byte WindowAlpha = 0xff;
+
+        internal static byte ClampWindowAlpha(byte alpha) {
+            return alpha < WindowAlphaMin ? (byte)0xff : alpha;
+        }
 
         // Whether it is night/dark mode
         internal static bool InNightMode;
@@ -250,6 +258,16 @@ namespace QTTabBarLib {
                         }
                         if(!byte.TryParse((string)key.GetValue("WindowAlpha", "255"), out WindowAlpha)) {
                             WindowAlpha = 0xff;
+                        }
+                        byte clamped = ClampWindowAlpha(WindowAlpha);
+                        if(clamped != WindowAlpha) {
+                            // Persist the repair so the next Explorer process does not
+                            // keep reloading a fully-invisible alpha from the registry.
+                            WindowAlpha = clamped;
+                            key.SetValue("WindowAlpha", WindowAlpha);
+                        }
+                        else {
+                            WindowAlpha = clamped;
                         }
                     }
                 }

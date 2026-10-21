@@ -1183,7 +1183,10 @@ namespace QTTabBarLib {
                             int num2;
                             int num3;
                             if(PInvoke.GetLayeredWindowAttributes(ExplorerHandle, out num2, out num, out num3)) {
-                                QTUtility.WindowAlpha = num;
+                                // Never persist a fully invisible window — that makes every
+                                // subsequent Explorer open look like "taskbar preview works
+                                // but the window never appears".
+                                QTUtility.WindowAlpha = QTUtility.ClampWindowAlpha(num);
                             }
                             else {
                                 QTUtility.WindowAlpha = 0xff;
@@ -4735,6 +4738,7 @@ namespace QTTabBarLib {
                 timer.Tick += handler;
                 timer.Start();
             }
+            QTUtility.WindowAlpha = QTUtility.ClampWindowAlpha(QTUtility.WindowAlpha);
             if(QTUtility.WindowAlpha < 0xff) {
                 QTUtility2.log("QTTabBarClass SetWindowLongPtr SetLayeredWindowAttributes");
                 PInvoke.SetWindowLongPtr(ExplorerHandle, -20, PInvoke.Ptr_OP_OR(PInvoke.GetWindowLongPtr(ExplorerHandle, -20), 0x80000));

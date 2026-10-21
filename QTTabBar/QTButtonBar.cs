@@ -1489,9 +1489,10 @@ namespace QTTabBarLib {
          * Semi-transparency event
          */
         private void trackBar_ValueChanged(object sender, EventArgs e) {
-            int bAlpha = ((ToolStripTrackBar)sender).Value;
+            int bAlpha = Math.Max(QTUtility.WindowAlphaMin, ((ToolStripTrackBar)sender).Value);
             PInvoke.SetWindowLongPtr(ExplorerHandle, -20, PInvoke.Ptr_OP_OR(PInvoke.GetWindowLongPtr(ExplorerHandle, -20), 0x80000));
             PInvoke.SetLayeredWindowAttributes(ExplorerHandle, 0, (byte)bAlpha, 2);
+            QTUtility.WindowAlpha = (byte)bAlpha;
             
             if (Explorer != null)
             {
